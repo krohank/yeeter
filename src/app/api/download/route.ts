@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     // 1. INSTAGRAM (Using existing RapidAPI)
     if (url.includes("instagram.com")) {
-      const rapidApiRes = await fetch(\`https://instagram-reels-downloader-api.p.rapidapi.com/download?url=\${encodeURIComponent(url)}\`, {
+      const rapidApiRes = await fetch(`https://instagram-reels-downloader-api.p.rapidapi.com/download?url=${encodeURIComponent(url)}`, {
         headers: {
           "x-rapidapi-host": "instagram-reels-downloader-api.p.rapidapi.com",
           "x-rapidapi-key": "09357daa53msh84462b75a2a177ep170dfbjsnd5286fc0955f"
