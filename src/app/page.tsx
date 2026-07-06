@@ -4,8 +4,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [url, setUrl] = useState("");
-  const [browser, setBrowser] = useState("none");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success, error
   const [message, setMessage] = useState("");
 
@@ -17,22 +16,24 @@ export default function Home() {
     setMessage("Initializing download...");
 
     try {
+      setVideoUrl("");
       const response = await fetch("/api/download", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url, browser }),
+        body: JSON.stringify({ url }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to download");
       }
 
+      setVideoUrl(data.url);
       setStatus("success");
-      setMessage(data.message || "Download complete! Check your Downloads folder.");
+      setMessage("");
     } catch (err: any) {
       setStatus("error");
       setMessage(err.message || "An unknown error occurred");
@@ -72,48 +73,6 @@ export default function Home() {
             />
           </div>
 
-          <div className="flex flex-col gap-2 relative">
-            <label className="text-black font-black text-base sm:text-lg pl-1 uppercase tracking-wide">Browser Cookies (Optional)</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                disabled={status === "loading"}
-                className="w-full bg-white border-4 border-black rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] cursor-pointer text-base sm:text-lg text-left flex justify-between items-center"
-              >
-                <span>
-                  {browser === "none" ? "Nah, I'm good (Default)" : browser.charAt(0).toUpperCase() + browser.slice(1)}
-                </span>
-                <span className={`transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : "rotate-0"}`}>▼</span>
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 w-full mt-3 bg-white border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
-                  {[
-                    { value: "none", label: "Nah, I'm good (Default) 🦦" },
-                    { value: "chrome", label: "Chrome" },
-                    { value: "edge", label: "Edge" },
-                    { value: "firefox", label: "Firefox" },
-                    { value: "brave", label: "Brave" },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        setBrowser(option.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-black font-bold text-base sm:text-lg transition-colors border-b-4 border-black last:border-b-0 
-                        ${browser === option.value ? "bg-yellow-300" : "hover:bg-pink-400"}
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
 
           <button
             type="submit"
@@ -137,21 +96,20 @@ export default function Home() {
           </button>
         </form>
 
-        {message && (
-          <div
-            className={`mt-6 sm:mt-8 p-4 w-full rounded-xl border-4 border-black font-bold text-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-base sm:text-lg ${
-              status === "success"
-                ? "bg-green-400 text-black rotate-1"
-                : status === "error"
-                ? "bg-red-500 text-white -rotate-1"
-                : "bg-white text-black"
-            }`}
+        {status === "success" && videoUrl && (
+          <a
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 w-full py-6 rounded-xl font-black text-2xl sm:text-3xl uppercase tracking-wider transition-all duration-200 border-4 border-black flex items-center justify-center gap-3 bg-green-400 hover:bg-green-300 text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] sm:hover:translate-y-[6px] sm:hover:translate-x-[6px] active:shadow-none active:translate-y-[6px] active:translate-x-[6px] sm:active:translate-y-[8px] sm:active:translate-x-[8px] animate-in fade-in zoom-in duration-300 rotate-1"
           >
-            {message === "Download complete! Check your Downloads folder." 
-              ? "Boom! Video acquired. Check your Downloads. 🦦🎉"
-              : message === "Initializing download..."
-              ? "Hold onto your hats... 🦦🤠"
-              : message}
+            💾 OPEN VIDEO 💾
+          </a>
+        )}
+
+        {status === "error" && message && (
+          <div className="mt-6 sm:mt-8 p-4 w-full rounded-xl border-4 border-black font-bold text-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-base sm:text-lg bg-red-500 text-white -rotate-1">
+            {message}
           </div>
         )}
       </div>
