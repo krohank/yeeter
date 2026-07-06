@@ -34,33 +34,50 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. YOUTUBE & PINTEREST (Using Cobalt API - robust cloud downloader)
-    if (url.includes("youtube.com") || url.includes("youtu.be") || url.includes("pinterest.com") || url.includes("pin.it") || url.includes("tiktok.com")) {
-      const cobaltRes = await fetch("https://api.cobalt.tools/api/json", {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          url: url,
-          vQuality: "720"
-        })
-      });
+    // 2. YOUTUBE (Using RapidAPI)
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      const ytIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      const ytId = ytIdMatch ? ytIdMatch[1] : null;
 
-      if (!cobaltRes.ok) {
-         throw new Error("Failed to extract video from this platform.");
+      if (!ytId) {
+        throw new Error("Could not extract YouTube Video ID");
       }
 
-      const data = await cobaltRes.json();
+      const rapidApiRes = await fetch(`https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_video/${ytId}?quality=720`, {
+        headers: {
+          "x-rapidapi-host": "youtube-video-fast-downloader-24-7.p.rapidapi.com",
+          "x-rapidapi-key": "09357daa53msh84462b75a2a177ep170dfbjsnd5286fc0955f"
+        }
+      });
+      const data = await rapidApiRes.json();
       
-      if (data.status === "error") {
-        throw new Error("API Error: " + data.text);
+      if (!data.file) {
+        throw new Error("Failed to extract YouTube video via API");
       }
       
       return NextResponse.json({
         success: true,
-        url: data.url
+        url: data.file
+      });
+    }
+
+    // 3. PINTEREST (Using RapidAPI)
+    if (url.includes("pinterest.com") || url.includes("pin.it")) {
+      const rapidApiRes = await fetch(`https://pinterest-video-and-image-downloader.p.rapidapi.com/pinterest?url=${encodeURIComponent(url)}`, {
+        headers: {
+          "x-rapidapi-host": "pinterest-video-and-image-downloader.p.rapidapi.com",
+          "x-rapidapi-key": "09357daa53msh84462b75a2a177ep170dfbjsnd5286fc0955f"
+        }
+      });
+      const data = await rapidApiRes.json();
+      
+      if (!data.success || !data.data || !data.data.url) {
+        throw new Error("Failed to extract Pinterest video via API");
+      }
+      
+      return NextResponse.json({
+        success: true,
+        url: data.data.url
       });
     }
 
