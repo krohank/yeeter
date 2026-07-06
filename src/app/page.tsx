@@ -1,65 +1,160 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [url, setUrl] = useState("");
+  const [browser, setBrowser] = useState("none");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle, loading, success, error
+  const [message, setMessage] = useState("");
+
+  const handleDownload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url) return;
+
+    setStatus("loading");
+    setMessage("Initializing download...");
+
+    try {
+      const response = await fetch("/api/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url, browser }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to download");
+      }
+
+      setStatus("success");
+      setMessage(data.message || "Download complete! Check your Downloads folder.");
+    } catch (err: any) {
+      setStatus("error");
+      setMessage(err.message || "An unknown error occurred");
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center p-4 sm:p-8 bg-yellow-300 selection:bg-pink-400 selection:text-black font-sans relative overflow-hidden">
+      
+      {/* Chaotic background animals */}
+      <div className="absolute top-10 left-4 text-5xl md:text-6xl animate-bounce">🦦</div>
+      <div className="absolute bottom-20 right-4 text-5xl md:text-6xl animate-pulse">🦒</div>
+      <div className="absolute top-1/4 right-8 text-5xl md:text-6xl -rotate-12">🦥</div>
+      <div className="absolute bottom-10 left-10 text-5xl md:text-6xl rotate-12">🦓</div>
+      <div className="absolute top-1/2 left-2 text-5xl md:text-6xl">🦩</div>
+
+      <div className="w-full max-w-xl p-6 sm:p-8 bg-pink-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] rounded-2xl flex flex-col items-center transform md:rotate-1 transition-transform hover:rotate-0 duration-300 relative z-10 mx-auto my-auto">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-4xl sm:text-5xl font-black text-black mb-3 uppercase tracking-tighter flex items-center justify-center gap-2">
+            Yeet The Video 🦦
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-black font-bold text-base sm:text-lg px-4 py-2 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-lg inline-block rotate-[-2deg]">
+            "Legally" acquire pixels from the internet.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <form onSubmit={handleDownload} className="w-full flex flex-col gap-5 sm:gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-black font-black text-base sm:text-lg pl-1 uppercase tracking-wide">The Link</label>
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Drop that juicy link here..."
+              className="w-full bg-white border-4 border-black rounded-xl px-4 py-4 text-black font-bold placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-base sm:text-lg"
+              disabled={status === "loading"}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          <div className="flex flex-col gap-2 relative">
+            <label className="text-black font-black text-base sm:text-lg pl-1 uppercase tracking-wide">Browser Cookies (Optional)</label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                disabled={status === "loading"}
+                className="w-full bg-white border-4 border-black rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] cursor-pointer text-base sm:text-lg text-left flex justify-between items-center"
+              >
+                <span>
+                  {browser === "none" ? "Nah, I'm good (Default)" : browser.charAt(0).toUpperCase() + browser.slice(1)}
+                </span>
+                <span className={`transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : "rotate-0"}`}>▼</span>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 w-full mt-3 bg-white border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                  {[
+                    { value: "none", label: "Nah, I'm good (Default) 🦦" },
+                    { value: "chrome", label: "Chrome" },
+                    { value: "edge", label: "Edge" },
+                    { value: "firefox", label: "Firefox" },
+                    { value: "brave", label: "Brave" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setBrowser(option.value);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-black font-bold text-base sm:text-lg transition-colors border-b-4 border-black last:border-b-0 
+                        ${browser === option.value ? "bg-yellow-300" : "hover:bg-pink-400"}
+                      `}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={status === "loading" || !url}
+            className={`w-full py-4 rounded-xl font-black text-xl sm:text-2xl uppercase tracking-wider transition-all duration-200 border-4 border-black flex items-center justify-center gap-3 mt-2 sm:mt-4
+              ${
+                status === "loading"
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] translate-y-[6px] translate-x-[6px]"
+                  : "bg-cyan-400 hover:bg-cyan-300 text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] sm:hover:translate-y-[6px] sm:hover:translate-x-[6px] active:shadow-none active:translate-y-[6px] active:translate-x-[6px] sm:active:translate-y-[8px] sm:active:translate-x-[8px]"
+              }
+            `}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {status === "loading" ? (
+              <>
+                <span className="animate-bounce">🦦</span>
+                Stealing...
+              </>
+            ) : (
+              "GIMME THE VIDEO!"
+            )}
+          </button>
+        </form>
+
+        {message && (
+          <div
+            className={`mt-6 sm:mt-8 p-4 w-full rounded-xl border-4 border-black font-bold text-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-base sm:text-lg ${
+              status === "success"
+                ? "bg-green-400 text-black rotate-1"
+                : status === "error"
+                ? "bg-red-500 text-white -rotate-1"
+                : "bg-white text-black"
+            }`}
+          >
+            {message === "Download complete! Check your Downloads folder." 
+              ? "Boom! Video acquired. Check your Downloads. 🦦🎉"
+              : message === "Initializing download..."
+              ? "Hold onto your hats... 🦦🤠"
+              : message}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
