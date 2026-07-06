@@ -98,12 +98,11 @@ export default function Home() {
 
         {status === "success" && videoUrl && (
           <a
-            href={videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/api/proxy?url=${encodeURIComponent(videoUrl)}`}
+            download
             className="mt-6 w-full py-6 rounded-xl font-black text-2xl sm:text-3xl uppercase tracking-wider transition-all duration-200 border-4 border-black flex items-center justify-center gap-3 bg-green-400 hover:bg-green-300 text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] sm:hover:translate-y-[6px] sm:hover:translate-x-[6px] active:shadow-none active:translate-y-[6px] active:translate-x-[6px] sm:active:translate-y-[8px] sm:active:translate-x-[8px] animate-in fade-in zoom-in duration-300 rotate-1"
           >
-            💾 OPEN VIDEO 💾
+            💾 DOWNLOAD VIDEO 💾
           </a>
         )}
 
